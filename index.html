@@ -40,6 +40,11 @@
         color: gray;
         font-size: 14px;
     }
+
+    .categoryBox {
+        margin-top: 15px;
+        margin-bottom: 15px;
+    }
 </style>
 
 </head>
@@ -48,103 +53,224 @@
 
 <h2>دفترچه یادداشت</h2>
 
-<input 
-    type="text" 
-    id="titleInput" 
+<input
+    type="text"
+    id="titleInput"
     placeholder="عنوان"
 >
 
-<textarea 
-    id="contentInput" 
-    rows="5" 
-    placeholder="متن یادداشت"
-></textarea>
+<textarea
+    id="contentInput"
+    rows="5"
+    placeholder="متن یادداشت">
+</textarea>
 
 <select id="categoryInput">
-    <option value="درس">درس</option>
-    <option value="کار">کار</option>
-    <option value="ایده">ایده</option>
-    <option value="شخصی">شخصی</option>
 </select>
 
 <br>
 
 <button onclick="saveNote()">ذخیره</button>
 
+<div class="categoryBox">
+
+    <input
+        type="text"
+        id="newCategoryInput"
+        placeholder="نام دسته جدید"
+    >
+
+    <button onclick="addCategory()">
+        افزودن دسته
+    </button>
+
+</div>
+
 <hr>
 
-<input 
-    type="text" 
-    id="searchInput" 
-    placeholder="جستجو بین یادداشت‌ها" 
-    oninput="searchNotes()"
+<input
+    type="text"
+    id="searchInput"
+    placeholder="جستجو بین یادداشت‌ها"
+    oninput="filterNotes()"
 >
 
+<select
+    id="categoryFilter"
+    onchange="filterNotes()"
+>
+</select>
+
 <div id="notesContainer"></div>
+
+
 <script>
 
-    let savedNotes = JSON.parse(localStorage.getItem("noteStorage")) || [];
-    
-    let editingNoteIndex = null;
-    
-    showNotes();
-    
-    
-    function showstar(index) {
-    
-        if (savedNotes[index].isStarred === undefined) {
-            savedNotes[index].isStarred = false;
-        }
-    
-        savedNotes[index].isStarred = !savedNotes[index].isStarred;
-    
-        localStorage.setItem(
-            "noteStorage",
-            JSON.stringify(savedNotes)
-        );
-    
-        showNotes();
-    }
-    
-    
-    function saveNote() {
-    
-        let title = document.getElementById("titleInput").value;
-    
-        let content = document.getElementById("contentInput").value;
-    
-        let category = document.getElementById("categoryInput").value;
-    
-    
-        if (editingNoteIndex === null) {
-    
-            savedNotes.push({
-                title: title,
-                content: content,
-                category: category,
-                isStarred: false
-            });
-    
-        } else {
-    
-            savedNotes[editingNoteIndex].title = title;
-    
-            savedNotes[editingNoteIndex].content = content;
-    
-            savedNotes[editingNoteIndex].category = category;
-    
-            editingNoteIndex = null;
-        }
-    
-    
-        localStorage.setItem(
-            "noteStorage",
-            JSON.stringify(savedNotes)
-        );
-    
-        showNotes();
+let savedNotes =
+    JSON.parse(localStorage.getItem("noteStorage")) || [];
 
-        document.getElementById("titleInput").value = "";
+
+let categories =
+    JSON.parse(localStorage.getItem("categories")) ||
+    ["درس", "کار", "ایده", "شخصی"];
+
+
+let editingNoteIndex = null;
+
+
+showCategories();
+
+showNotes();
+
+
+function showCategories() {
+
+    let categoryInput =
+        document.getElementById("categoryInput");
+
+    let categoryFilter =
+        document.getElementById("categoryFilter");
+
+
+    categoryInput.innerHTML = "";
+
+    categoryFilter.innerHTML =
+        "<option value='all'>همه دسته‌ها</option>";
+
+
+    for (let i = 0; i < categories.length; i++) {
+
+        categoryInput.innerHTML +=
+            "<option value='" +
+            categories[i] +
+            "'>" +
+            categories[i] +
+            "</option>";
+
+
+        categoryFilter.innerHTML +=
+            "<option value='" +
+            categories[i] +
+            "'>" +
+            categories[i] +
+            "</option>";
+    }
+}
+
+
+function addCategory() {
+
+    let newCategory =
+        document.getElementById("newCategoryInput").value.trim();
+
+
+    if (newCategory === "") {
+
+        alert("لطفاً نام دسته را وارد کن.");
+
+        return;
+    }
+
+
+    if (categories.includes(newCategory)) {
+
+        alert("این دسته قبلاً وجود دارد.");
+
+        return;
+    }
+
+
+    categories.push(newCategory);
+
+
+    localStorage.setItem(
+        "categories",
+        JSON.stringify(categories)
+    );
+
+
+    showCategories();
+
+
+    document.getElementById("newCategoryInput").value = "";
+}
+
+
+function showstar(index) {
+
+    if (savedNotes[index].isStarred === undefined) {
+
+        savedNotes[index].isStarred = false;
+    }
+
+
+    savedNotes[index].isStarred =
+        !savedNotes[index].isStarred;
+
+
+    localStorage.setItem(
+        "noteStorage",
+        JSON.stringify(savedNotes)
+    );
+
+
+    showNotes();
+}
+
+
+function saveNote() {
+
+    let title =
+        document.getElementById("titleInput").value;
+
+
+    let content =
+        document.getElementById("contentInput").value;
+
+
+    let category =
+        document.getElementById("categoryInput").value;
+
+
+    if (editingNoteIndex === null) {
+
+        savedNotes.push({
+
+            title: title,
+
+            content: content,
+
+            category: category,
+
+            isStarred: false
+        });
+
+    } else {
+
+        savedNotes[editingNoteIndex].title =
+            title;
+
+
+        savedNotes[editingNoteIndex].content =
+            content;
+
+
+        savedNotes[editingNoteIndex].category =
+            category;
+
+
+        editingNoteIndex = null;
+    }
+    localStorage.setItem(
+        "noteStorage",
+        JSON.stringify(savedNotes)
+    );
+
+
+    showNotes();
+
+
+    document.getElementById("titleInput").value = "";
 
     document.getElementById("contentInput").value = "";
 }
@@ -155,11 +281,14 @@ function editNote(noteIndex) {
     document.getElementById("titleInput").value =
         savedNotes[noteIndex].title;
 
+
     document.getElementById("contentInput").value =
         savedNotes[noteIndex].content;
 
+
     document.getElementById("categoryInput").value =
         savedNotes[noteIndex].category;
+
 
     editingNoteIndex = noteIndex;
 }
@@ -167,104 +296,155 @@ function editNote(noteIndex) {
 
 function deleteNote(noteIndex) {
 
-    let answer = confirm("آیا مطمئنی می‌خواهی این یادداشت حذف شود؟");
+    let answer =
+        confirm("آیا مطمئنی می‌خواهی این یادداشت حذف شود؟");
+
 
     if (answer === true) {
 
         savedNotes.splice(noteIndex, 1);
+
 
         localStorage.setItem(
             "noteStorage",
             JSON.stringify(savedNotes)
         );
 
+
         showNotes();
     }
 }
+
+
 function renderNote(note, index) {
 
-let isStarred = note.isStarred === true;
+    let isStarred =
+        note.isStarred === true;
 
-let starIcon = isStarred ? "⭐" : "☆";
+
+    let starIcon =
+        isStarred ? "⭐" : "☆";
 
 
-return "<div class='noteCard'>" +
+    return "<div class='noteCard'>" +
 
-    "<span class='star-btn' onclick='showstar(" + index + ")'>" +
-    starIcon +
-    "</span>" +
+        "<span class='star-btn' onclick='showstar(" +
+        index +
+        ")'>" +
 
-    "<h3>" +
-    note.title +
-    "</h3>" +
+        starIcon +
 
-    "<p class='category'>" +
-    "دسته: " +
-    note.category +
-    "</p>" +
+        "</span>" +
 
-    "<p>" +
-    note.content +
-    "</p>" +
+        "<h3>" +
+        note.title +
+        "</h3>" +
 
-    "<button onclick='editNote(" + index + ")'>" +
-    "ویرایش" +
-    "</button>" +
+        "<p>" +
+        note.content +
+        "</p>" +
 
-    "<button onclick='deleteNote(" + index + ")'>" +
-    "حذف" +
-    "</button>" +
+        "<p class='category'>" +
+        "دسته: " +
+        note.category +
+        "</p>" +
 
-    "</div>";
+        "<button onclick='editNote(" +
+        index +
+        ")'>" +
+
+        "ویرایش" +
+
+        "</button>" +
+
+        "<button onclick='deleteNote(" +
+        index +
+        ")'>" +
+
+        "حذف" +
+
+        "</button>" +
+
+        "</div>";
 }
 
 
 function showNotes() {
 
-let notesArea =
-    document.getElementById("notesContainer");
-
-notesArea.innerHTML = "";
+    let notesArea =
+        document.getElementById("notesContainer");
 
 
-for (
-    let i = 0;
-    i < savedNotes.length;
-    i++
-) {
-
-    notesArea.innerHTML +=
-        renderNote(savedNotes[i], i);
-}
-}
+    notesArea.innerHTML = "";
 
 
-function searchNotes() {
-
-let searchText =
-    document.getElementById("searchInput").value.toLowerCase();
-
-let notesArea =
-    document.getElementById("notesContainer");
-
-notesArea.innerHTML = "";
-
-
-for (
-    let i = 0;
-    i < savedNotes.length;
-    i++
-) {
-
-    if (
-        savedNotes[i].title.toLowerCase().includes(searchText) ||
-        savedNotes[i].content.toLowerCase().includes(searchText)
+    for (
+        let i = 0;
+        i < savedNotes.length;
+        i++
     ) {
 
         notesArea.innerHTML +=
             renderNote(savedNotes[i], i);
     }
 }
+
+
+function filterNotes() {
+
+    let searchText =
+        document
+        .getElementById("searchInput")
+        .value
+        .toLowerCase();
+
+
+    let selectedCategory =
+        document.getElementById("categoryFilter").value;
+
+
+    let notesArea =
+        document.getElementById("notesContainer");
+
+
+    notesArea.innerHTML = "";
+
+
+    for (
+        let i = 0;
+        i < savedNotes.length;
+        i++
+    ) {
+
+        let note =
+            savedNotes[i];
+
+
+        let matchesSearch =
+            note.title
+            .toLowerCase()
+            .includes(searchText) ||
+
+            note.content
+            .toLowerCase()
+            .includes(searchText);
+
+
+        let matchesCategory =
+            selectedCategory === "all" ||
+
+            note.category === selectedCategory;
+
+
+        if (
+            matchesSearch &&
+            matchesCategory
+        ) {
+
+            notesArea.innerHTML +=
+                renderNote(note, i);
+        }
+    }
 }
 
 </script>
