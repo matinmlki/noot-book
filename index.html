@@ -3,104 +3,271 @@
 <head>
 <meta charset="UTF-8">
 <title>دفترچه یادداشت</title>
+
 <style>
-    body{ font-family:tahoma; width:700px; margin:auto; margin-top:30px; }
-    input, textarea{ width:100%; padding:10px; margin:5px 0; }
-    button{ padding:10px 20px; margin-left:5px; }
-    .noteCard{ border:1px solid black; padding:10px; margin-top:10px; }
-    .star-btn { cursor: pointer; font-size: 1.2em; margin-left: 10px; }
+    body {
+        font-family: tahoma;
+        width: 700px;
+        margin: auto;
+        margin-top: 30px;
+    }
+
+    input, textarea, select {
+        width: 100%;
+        padding: 10px;
+        margin: 5px 0;
+        box-sizing: border-box;
+    }
+
+    button {
+        padding: 10px 20px;
+        margin-left: 5px;
+    }
+
+    .noteCard {
+        border: 1px solid black;
+        padding: 10px;
+        margin-top: 10px;
+    }
+
+    .star-btn {
+        cursor: pointer;
+        font-size: 1.2em;
+        margin-left: 10px;
+    }
+
+    .category {
+        color: gray;
+        font-size: 14px;
+    }
 </style>
+
 </head>
+
 <body>
 
 <h2>دفترچه یادداشت</h2>
-<input type="text" id="titleInput" placeholder="عنوان">
-<textarea id="contentInput" rows="5" placeholder="متن یادداشت"></textarea>
+
+<input 
+    type="text" 
+    id="titleInput" 
+    placeholder="عنوان"
+>
+
+<textarea 
+    id="contentInput" 
+    rows="5" 
+    placeholder="متن یادداشت"
+></textarea>
+
+<select id="categoryInput">
+    <option value="درس">درس</option>
+    <option value="کار">کار</option>
+    <option value="ایده">ایده</option>
+    <option value="شخصی">شخصی</option>
+</select>
+
 <br>
+
 <button onclick="saveNote()">ذخیره</button>
+
 <hr>
-<input type="text" id="searchInput" placeholder="جستجو بین یادداشت‌ها" oninput="searchNotes()">
+
+<input 
+    type="text" 
+    id="searchInput" 
+    placeholder="جستجو بین یادداشت‌ها" 
+    oninput="searchNotes()"
+>
+
 <div id="notesContainer"></div>
-
 <script>
-let savedNotes = JSON.parse(localStorage.getItem("noteStorage")) || [];
-let editingNoteIndex = null;
 
-showNotes();
-
-function showstar(index) {
-    // بررسی امنیتی: اگر isStarred قبلا تعریف نشده، آن را تعریف کن
-    if (savedNotes[index].isStarred === undefined) {
-        savedNotes[index].isStarred = false;
-    }
-    savedNotes[index].isStarred = !savedNotes[index].isStarred;
-    localStorage.setItem("noteStorage", JSON.stringify(savedNotes));
+    let savedNotes = JSON.parse(localStorage.getItem("noteStorage")) || [];
+    
+    let editingNoteIndex = null;
+    
     showNotes();
-}
-
-function saveNote(){
-    let title = document.getElementById("titleInput").value;
-    let content = document.getElementById("contentInput").value;
-
-    if(editingNoteIndex === null){
-        savedNotes.push({ title: title, content: content, isStarred: false });
-    } else {
-        savedNotes[editingNoteIndex].title = title;
-        savedNotes[editingNoteIndex].content = content;
-        editingNoteIndex = null;
+    
+    
+    function showstar(index) {
+    
+        if (savedNotes[index].isStarred === undefined) {
+            savedNotes[index].isStarred = false;
+        }
+    
+        savedNotes[index].isStarred = !savedNotes[index].isStarred;
+    
+        localStorage.setItem(
+            "noteStorage",
+            JSON.stringify(savedNotes)
+        );
+    
+        showNotes();
     }
+    
+    
+    function saveNote() {
+    
+        let title = document.getElementById("titleInput").value;
+    
+        let content = document.getElementById("contentInput").value;
+    
+        let category = document.getElementById("categoryInput").value;
+    
+    
+        if (editingNoteIndex === null) {
+    
+            savedNotes.push({
+                title: title,
+                content: content,
+                category: category,
+                isStarred: false
+            });
+    
+        } else {
+    
+            savedNotes[editingNoteIndex].title = title;
+    
+            savedNotes[editingNoteIndex].content = content;
+    
+            savedNotes[editingNoteIndex].category = category;
+    
+            editingNoteIndex = null;
+        }
+    
+    
+        localStorage.setItem(
+            "noteStorage",
+            JSON.stringify(savedNotes)
+        );
+    
+        showNotes();
 
-    localStorage.setItem("noteStorage", JSON.stringify(savedNotes));
-    showNotes();
-    document.getElementById("titleInput").value = "";
+        document.getElementById("titleInput").value = "";
+
     document.getElementById("contentInput").value = "";
 }
 
-function editNote(noteIndex){
-    document.getElementById("titleInput").value = savedNotes[noteIndex].title;
-    document.getElementById("contentInput").value = savedNotes[noteIndex].content;
+
+function editNote(noteIndex) {
+
+    document.getElementById("titleInput").value =
+        savedNotes[noteIndex].title;
+
+    document.getElementById("contentInput").value =
+        savedNotes[noteIndex].content;
+
+    document.getElementById("categoryInput").value =
+        savedNotes[noteIndex].category;
+
     editingNoteIndex = noteIndex;
 }
 
-function deleteNote(noteIndex){
-    savedNotes.splice(noteIndex, 1);
-    localStorage.setItem("noteStorage", JSON.stringify(savedNotes));
-    showNotes();
-}
 
+function deleteNote(noteIndex) {
+
+    let answer = confirm("آیا مطمئنی می‌خواهی این یادداشت حذف شود؟");
+
+    if (answer === true) {
+
+        savedNotes.splice(noteIndex, 1);
+
+        localStorage.setItem(
+            "noteStorage",
+            JSON.stringify(savedNotes)
+        );
+
+        showNotes();
+    }
+}
 function renderNote(note, index) {
-    // بررسی امنیتی برای نمایش ستاره
-    let isStarred = note.isStarred === true;
-    let starIcon = isStarred ? "⭐" : "☆";
 
-    return "<div class='noteCard'>" +
-           "<span class='star-btn' onclick='showstar(" + index + ")'>" + starIcon + "</span>" +
-           "<h3>" + note.title + "</h3>" +
-           "<p>" + note.content + "</p>" +
-           "<button onclick='editNote(" + index + ")'>ویرایش</button>" +
-           "<button onclick='deleteNote(" + index + ")'>حذف</button>" +
-           "</div>";
+let isStarred = note.isStarred === true;
+
+let starIcon = isStarred ? "⭐" : "☆";
+
+
+return "<div class='noteCard'>" +
+
+    "<span class='star-btn' onclick='showstar(" + index + ")'>" +
+    starIcon +
+    "</span>" +
+
+    "<h3>" +
+    note.title +
+    "</h3>" +
+
+    "<p class='category'>" +
+    "دسته: " +
+    note.category +
+    "</p>" +
+
+    "<p>" +
+    note.content +
+    "</p>" +
+
+    "<button onclick='editNote(" + index + ")'>" +
+    "ویرایش" +
+    "</button>" +
+
+    "<button onclick='deleteNote(" + index + ")'>" +
+    "حذف" +
+    "</button>" +
+
+    "</div>";
 }
 
-function showNotes(){
-    let notesArea = document.getElementById("notesContainer");
-    notesArea.innerHTML = "";
-    for(let i = 0; i < savedNotes.length; i++){
-        notesArea.innerHTML += renderNote(savedNotes[i], i);
+
+function showNotes() {
+
+let notesArea =
+    document.getElementById("notesContainer");
+
+notesArea.innerHTML = "";
+
+
+for (
+    let i = 0;
+    i < savedNotes.length;
+    i++
+) {
+
+    notesArea.innerHTML +=
+        renderNote(savedNotes[i], i);
+}
+}
+
+
+function searchNotes() {
+
+let searchText =
+    document.getElementById("searchInput").value.toLowerCase();
+
+let notesArea =
+    document.getElementById("notesContainer");
+
+notesArea.innerHTML = "";
+
+
+for (
+    let i = 0;
+    i < savedNotes.length;
+    i++
+) {
+
+    if (
+        savedNotes[i].title.toLowerCase().includes(searchText) ||
+        savedNotes[i].content.toLowerCase().includes(searchText)
+    ) {
+
+        notesArea.innerHTML +=
+            renderNote(savedNotes[i], i);
     }
 }
-
-function searchNotes(){
-    let searchText = document.getElementById("searchInput").value.toLowerCase();
-    let notesArea = document.getElementById("notesContainer");
-    notesArea.innerHTML = "";
-    for(let i = 0; i < savedNotes.length; i++){
-        if(savedNotes[i].title.toLowerCase().includes(searchText) || 
-           savedNotes[i].content.toLowerCase().includes(searchText)){
-            notesArea.innerHTML += renderNote(savedNotes[i], i);
-        }
-    }
 }
+
 </script>
+
 </body>
 </html>
