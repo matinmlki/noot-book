@@ -1,57 +1,210 @@
 <!DOCTYPE html>
 <html lang="fa">
+
 <head>
+
 <meta charset="UTF-8">
+
 <title>دفترچه یادداشت</title>
 
+
 <style>
+    h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+    
+
     body {
         font-family: tahoma;
         width: 700px;
         margin: auto;
         margin-top: 30px;
     }
+    .noteText {
 
-    input, textarea, select {
+max-height: 45px;
+overflow: hidden;
+
+}
+
+
+.noteText.expanded {
+
+max-height: none;
+
+}
+
+
+.moreButton {
+
+margin-top: 5px;
+cursor: pointer;
+
+}
+
+    input,
+    textarea,
+    select {
+
         width: 100%;
         padding: 10px;
         margin: 5px 0;
         box-sizing: border-box;
+        border-radius: 6px;
+        input:focus, textarea:focus, select:focus {
+        outline: 2px solid #888;
+       }
+
     }
+    textarea {
+    min-height: 120px;
+    resize: vertical;
+    }
+
 
     button {
-        padding: 10px 20px;
-        margin-left: 5px;
+
+        padding: 8px 16px;
+       margin-left: 5px;
+       border: 1px solid #ccc;
+       border-radius: 6px;
+       cursor: pointer;
+
     }
+    
+
 
     .noteCard {
-        border: 1px solid black;
-        padding: 10px;
-        margin-top: 10px;
+
+        border: 1px solid #ccc;
+        padding: 15px;
+        margin-top: 15px;
+        border-radius: 8px;
+
+    }
+    .categoryManagement {
+
+        border: 8px solid #6b4226 !important;
+         padding: 20px;
+        margin-top: 20px;
+        margin-bottom: 20px;
+        border-radius: 10px;
+
+    }
+    .categoryManagement h3 {
+
+      font-weight: bold;
+      font-size: 20px;
+
     }
 
+
     .star-btn {
+
         cursor: pointer;
         font-size: 1.2em;
         margin-left: 10px;
+
     }
+
 
     .category {
+
         color: gray;
         font-size: 14px;
+
     }
 
+
     .categoryBox {
+
         margin-top: 15px;
         margin-bottom: 15px;
+
     }
+
+
+    .categoryManagement {
+
+        border: 1px solid gray;
+        padding: 10px;
+        margin-top: 10px;
+
+    }
+    .categoryManagement select,
+    .categoryManagement input {
+    margin-bottom: 10px;
+}
+#welcomeScreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background-color: white;
+
+    animation: welcomeAnimation 3s forwards;
+}
+
+#welcomeScreen h1 {
+    font-size: 50px;
+    opacity: 0;
+
+    animation: welcomeTextAnimation 3s forwards;
+}
+
+@keyframes welcomeAnimation {
+    0% {
+        opacity: 1;
+    }
+
+    80% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+        visibility: hidden;
+    }
+}
+
+@keyframes welcomeTextAnimation {
+    0% {
+        opacity: 0;
+    }
+
+    30% {
+        opacity: 1;
+    }
+
+    70% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
 </style>
 
 </head>
 
+
 <body>
+    <div id="welcomeScreen">
+        <h1>Welcome</h1>
+    </div>
+
 
 <h2>دفترچه یادداشت</h2>
+
 
 <input
     type="text"
@@ -59,18 +212,25 @@
     placeholder="عنوان"
 >
 
+
 <textarea
     id="contentInput"
     rows="5"
     placeholder="متن یادداشت">
 </textarea>
 
+
 <select id="categoryInput">
 </select>
 
+
 <br>
 
-<button onclick="saveNote()">ذخیره</button>
+
+<button onclick="saveNote()">
+    ذخیره
+</button>
+
 
 <div class="categoryBox">
 
@@ -80,13 +240,16 @@
         placeholder="نام دسته جدید"
     >
 
+
     <button onclick="addCategory()">
         افزودن دسته
     </button>
 
 </div>
 
+
 <hr>
+
 
 <input
     type="text"
@@ -95,27 +258,67 @@
     oninput="filterNotes()"
 >
 
+
 <select
     id="categoryFilter"
     onchange="filterNotes()"
 >
 </select>
 
+
+<div class="categoryManagement">
+
+    <h3>مدیریت دسته‌ها</h3>
+
+
+    <select id="categoryManagementSelect">
+    </select>
+
+
+    <br>
+
+
+    <input
+        type="text"
+        id="editCategoryInput"
+        placeholder="نام جدید دسته"
+    >
+
+
+    <button onclick="editCategory()">
+        ویرایش دسته
+    </button>
+
+
+    <button onclick="deleteCategory()">
+        حذف دسته
+    </button>
+
+</div>
+
+
 <div id="notesContainer"></div>
+
 
 
 <script>
 
+
 let savedNotes =
-    JSON.parse(localStorage.getItem("noteStorage")) || [];
+    JSON.parse(
+        localStorage.getItem("noteStorage")
+    ) || [];
 
 
-let categories =
-    JSON.parse(localStorage.getItem("categories")) ||
+let noteCategories =
+    JSON.parse(
+        localStorage.getItem("categories")
+    ) ||
     ["درس", "کار", "ایده", "شخصی"];
 
 
 let editingNoteIndex = null;
+
 
 
 showCategories();
@@ -123,89 +326,339 @@ showCategories();
 showNotes();
 
 
+
 function showCategories() {
 
-    let categoryInput =
+    let noteCategorySelect =
         document.getElementById("categoryInput");
 
-    let categoryFilter =
+
+    let categoryFilterSelect =
         document.getElementById("categoryFilter");
 
 
-    categoryInput.innerHTML = "";
+    let categoryManagementSelect =
+        document.getElementById(
+            "categoryManagementSelect"
+        );
 
-    categoryFilter.innerHTML =
+
+    noteCategorySelect.innerHTML = "";
+
+
+    categoryFilterSelect.innerHTML =
         "<option value='all'>همه دسته‌ها</option>";
 
 
-    for (let i = 0; i < categories.length; i++) {
+    categoryManagementSelect.innerHTML = "";
 
-        categoryInput.innerHTML +=
+
+
+    for (
+        let categoryIndex = 0;
+        categoryIndex < noteCategories.length;
+        categoryIndex++
+    ) {
+
+        let currentCategory =
+            noteCategories[categoryIndex];
+
+
+        noteCategorySelect.innerHTML +=
+
             "<option value='" +
-            categories[i] +
+            currentCategory +
             "'>" +
-            categories[i] +
+            currentCategory +
             "</option>";
 
 
-        categoryFilter.innerHTML +=
+        categoryFilterSelect.innerHTML +=
+
             "<option value='" +
-            categories[i] +
+            currentCategory +
             "'>" +
-            categories[i] +
+            currentCategory +
             "</option>";
+
+
+        categoryManagementSelect.innerHTML +=
+
+            "<option value='" +
+            currentCategory +
+            "'>" +
+            currentCategory +
+            "</option>";
+
     }
+
 }
 
+function toggleMore(noteIndex) {
+
+let noteTextElement =
+    document.getElementById(
+        "noteText-" + noteIndex
+    );
+
+
+let moreButton =
+    document.getElementById(
+        "moreButton-" + noteIndex
+    );
+
+
+if (
+    noteTextElement.classList.contains("expanded")
+) {
+
+    noteTextElement.classList.remove("expanded");
+
+    moreButton.innerText = "بیشتر";
+
+}
+
+else {
+
+    noteTextElement.classList.add("expanded");
+
+    moreButton.innerText = "کمتر";
+
+}
+
+}
 
 function addCategory() {
 
-    let newCategory =
-        document.getElementById("newCategoryInput").value.trim();
+    let newCategoryName =
+        document
+        .getElementById("newCategoryInput")
+        .value
+        .trim();
 
 
-    if (newCategory === "") {
+    if (newCategoryName === "") {
 
         alert("لطفاً نام دسته را وارد کن.");
 
         return;
+
     }
 
 
-    if (categories.includes(newCategory)) {
+    if (
+        noteCategories.includes(newCategoryName)
+    ) {
 
         alert("این دسته قبلاً وجود دارد.");
 
         return;
+
     }
 
 
-    categories.push(newCategory);
+    noteCategories.push(newCategoryName);
 
 
     localStorage.setItem(
         "categories",
-        JSON.stringify(categories)
+        JSON.stringify(noteCategories)
     );
 
 
     showCategories();
 
 
-    document.getElementById("newCategoryInput").value = "";
+    document.getElementById(
+        "newCategoryInput"
+    ).value = "";
+
 }
 
 
-function showstar(index) {
 
-    if (savedNotes[index].isStarred === undefined) {
+function editCategory() {
 
-        savedNotes[index].isStarred = false;
+    let selectedCategoryName =
+        document
+        .getElementById(
+            "categoryManagementSelect"
+        )
+        .value;
+
+
+    let newCategoryName =
+        document
+        .getElementById(
+            "editCategoryInput"
+        )
+        .value
+        .trim();
+
+
+    if (newCategoryName === "") {
+
+        alert("لطفاً نام جدید دسته را وارد کن.");
+
+        return;
+
     }
 
 
-    savedNotes[index].isStarred =
-        !savedNotes[index].isStarred;
+    if (
+        noteCategories.includes(newCategoryName)
+    ) {
+
+        alert("این دسته قبلاً وجود دارد.");
+
+        return;
+
+    }
+
+
+    let categoryIndex =
+        noteCategories.indexOf(
+            selectedCategoryName
+        );
+
+
+    noteCategories[categoryIndex] =
+        newCategoryName;
+
+
+    for (
+        let noteIndex = 0;
+        noteIndex < savedNotes.length;
+        noteIndex++
+    ) {
+
+        if (
+            savedNotes[noteIndex].category ===
+            selectedCategoryName
+        ) {
+
+            savedNotes[noteIndex].category =
+                newCategoryName;
+
+        }
+
+    }
+
+
+    localStorage.setItem(
+        "categories",
+        JSON.stringify(noteCategories)
+    );
+
+
+    localStorage.setItem(
+        "noteStorage",
+        JSON.stringify(savedNotes)
+    );
+
+
+    showCategories();
+
+    showNotes();
+
+
+    document.getElementById(
+        "editCategoryInput"
+    ).value = "";
+
+}
+
+
+
+function deleteCategory() {
+
+    let selectedCategoryName =
+        document
+        .getElementById(
+            "categoryManagementSelect"
+        )
+        .value;
+
+
+    let deleteConfirmation =
+        confirm(
+            "آیا مطمئنی می‌خواهی این دسته حذف شود؟"
+        );
+
+
+    if (
+        deleteConfirmation === false
+    ) {
+
+        return;
+
+    }
+
+
+    let categoryIndex =
+        noteCategories.indexOf(
+            selectedCategoryName
+        );
+
+
+    noteCategories.splice(
+        categoryIndex,
+        1
+    );
+
+
+    for (
+        let noteIndex = 0;
+        noteIndex < savedNotes.length;
+        noteIndex++
+    ) {
+
+        if (
+            savedNotes[noteIndex].category ===
+            selectedCategoryName
+        ) {
+
+            savedNotes[noteIndex].category =
+                "";
+
+        }
+
+    }
+
+
+    localStorage.setItem(
+        "categories",
+        JSON.stringify(noteCategories)
+    );
+
+
+    localStorage.setItem(
+        "noteStorage",
+        JSON.stringify(savedNotes)
+    );
+
+
+    showCategories();
+
+    showNotes();
+
+}
+
+
+
+function toggleStar(noteIndex) {
+
+    if (
+        savedNotes[noteIndex].isStarred === undefined
+    ) {
+
+        savedNotes[noteIndex].isStarred = false;
+
+    }
+
+
+    savedNotes[noteIndex].isStarred =
+        !savedNotes[noteIndex].isStarred;
 
 
     localStorage.setItem(
@@ -215,52 +668,72 @@ function showstar(index) {
 
 
     showNotes();
+
 }
+
 
 
 function saveNote() {
 
-    let title =
-        document.getElementById("titleInput").value;
+    let noteTitle =
+        document
+        .getElementById("titleInput")
+        .value;
 
 
-    let content =
-        document.getElementById("contentInput").value;
+    let noteContent =
+        document
+        .getElementById("contentInput")
+        .value;
 
 
-    let category =
-        document.getElementById("categoryInput").value;
+    let selectedCategory =
+        document
+        .getElementById("categoryInput")
+        .value;
+
 
 
     if (editingNoteIndex === null) {
 
         savedNotes.push({
 
-            title: title,
+            title: noteTitle,
 
-            content: content,
+            content: noteContent,
 
-            category: category,
+            category: selectedCategory,
 
             isStarred: false
+
         });
 
-    } else {
-
-        savedNotes[editingNoteIndex].title =
-            title;
+    }
 
 
-        savedNotes[editingNoteIndex].content =
-            content;
+    else {
+
+        savedNotes[
+            editingNoteIndex
+        ].title = noteTitle;
 
 
-        savedNotes[editingNoteIndex].category =
-            category;
+        savedNotes[
+            editingNoteIndex
+        ].content = noteContent;
+
+
+        savedNotes[
+            editingNoteIndex
+        ].category = selectedCategory;
 
 
         editingNoteIndex = null;
+
     }
+
+
+
     localStorage.setItem(
         "noteStorage",
         JSON.stringify(savedNotes)
@@ -270,39 +743,61 @@ function saveNote() {
     showNotes();
 
 
-    document.getElementById("titleInput").value = "";
+    document.getElementById(
+        "titleInput"
+    ).value = "";
 
-    document.getElementById("contentInput").value = "";
+
+    document.getElementById(
+        "contentInput"
+    ).value = "";
+
 }
+
 
 
 function editNote(noteIndex) {
 
-    document.getElementById("titleInput").value =
+    document.getElementById(
+        "titleInput"
+    ).value =
         savedNotes[noteIndex].title;
 
 
-    document.getElementById("contentInput").value =
+    document.getElementById(
+        "contentInput"
+    ).value =
         savedNotes[noteIndex].content;
 
 
-    document.getElementById("categoryInput").value =
+    document.getElementById(
+        "categoryInput"
+    ).value =
         savedNotes[noteIndex].category;
 
 
     editingNoteIndex = noteIndex;
+
 }
+
 
 
 function deleteNote(noteIndex) {
 
-    let answer =
-        confirm("آیا مطمئنی می‌خواهی این یادداشت حذف شود؟");
+    let deleteConfirmation =
+        confirm(
+            "آیا مطمئنی می‌خواهی این یادداشت حذف شود؟"
+        );
 
 
-    if (answer === true) {
+    if (
+        deleteConfirmation === true
+    ) {
 
-        savedNotes.splice(noteIndex, 1);
+        savedNotes.splice(
+            noteIndex,
+            1
+        );
 
 
         localStorage.setItem(
@@ -312,82 +807,134 @@ function deleteNote(noteIndex) {
 
 
         showNotes();
+
     }
+
 }
 
 
-function renderNote(note, index) {
 
-    let isStarred =
-        note.isStarred === true;
+function createNoteHTML(noteData, noteIndex) {
 
 
-    let starIcon =
-        isStarred ? "⭐" : "☆";
+    let isLongNote =
+    noteData.content.length > 100;
+
+    let starStatus =
+        noteData.isStarred === true;
+
+
+    let starSymbol =
+        starStatus ? "⭐" : "☆";
+
+    
+    let moreButtonHTML = "";
+    if (isLongNote) {
+        moreButtonHTML =
+
+        "<button " +
+        "id='moreButton-" +
+        noteIndex +
+        "' " +
+       "class='moreButton' " +
+       "onclick='toggleMore(" +
+       noteIndex +
+       ")'>" +
+
+        "بیشتر" +
+
+        "</button>";
+
+}
 
 
     return "<div class='noteCard'>" +
 
-        "<span class='star-btn' onclick='showstar(" +
-        index +
+        "<span class='star-btn' onclick='toggleStar(" +
+        noteIndex +
         ")'>" +
 
-        starIcon +
+        starSymbol +
 
         "</span>" +
 
-        "<h3>" +
-        note.title +
-        "</h3>" +
 
-        "<p>" +
-        note.content +
-        "</p>" +
+        "<h3>" +
+        noteData.title +
+        "</h3>" +
+        "<p id='noteText-" +
+           noteIndex +
+           "' class='noteText'>" +
+
+           noteData.content +
+
+           "</p>" +
+           moreButtonHTML +
+
+                     
+
+
+        
+
 
         "<p class='category'>" +
         "دسته: " +
-        note.category +
+        noteData.category +
         "</p>" +
 
+
         "<button onclick='editNote(" +
-        index +
+        noteIndex +
         ")'>" +
 
         "ویرایش" +
 
         "</button>" +
 
+
         "<button onclick='deleteNote(" +
-        index +
+        noteIndex +
         ")'>" +
 
         "حذف" +
 
         "</button>" +
 
+
         "</div>";
+
 }
+
 
 
 function showNotes() {
 
-    let notesArea =
-        document.getElementById("notesContainer");
+    let notesDisplayArea =
+        document.getElementById(
+            "notesContainer"
+        );
 
 
-    notesArea.innerHTML = "";
+    notesDisplayArea.innerHTML = "";
 
 
     for (
-        let i = 0;
-        i < savedNotes.length;
-        i++
+        let noteIndex = 0;
+        noteIndex < savedNotes.length;
+        noteIndex++
     ) {
 
-        notesArea.innerHTML +=
-            renderNote(savedNotes[i], i);
+        notesDisplayArea.innerHTML +=
+
+            createNoteHTML(
+                savedNotes[noteIndex],
+                noteIndex
+            );
+
     }
+
 }
+
 
 
 function filterNotes() {
@@ -400,54 +947,73 @@ function filterNotes() {
 
 
     let selectedCategory =
-        document.getElementById("categoryFilter").value;
+        document
+        .getElementById("categoryFilter")
+        .value;
 
 
-    let notesArea =
-        document.getElementById("notesContainer");
+    let filteredNotesArea =
+        document.getElementById(
+            "notesContainer"
+        );
 
 
-    notesArea.innerHTML = "";
+    filteredNotesArea.innerHTML = "";
 
 
     for (
-        let i = 0;
-        i < savedNotes.length;
-        i++
+        let noteIndex = 0;
+        noteIndex < savedNotes.length;
+        noteIndex++
     ) {
 
-        let note =
-            savedNotes[i];
+        let currentNote =
+            savedNotes[noteIndex];
 
 
-        let matchesSearch =
-            note.title
-            .toLowerCase()
-            .includes(searchText) ||
-
-            note.content
+        let titleContainsSearchText =
+            currentNote.title
             .toLowerCase()
             .includes(searchText);
 
 
-        let matchesCategory =
-            selectedCategory === "all" ||
+        let contentContainsSearchText =
+            currentNote.content
+            .toLowerCase()
+            .includes(searchText);
 
-            note.category === selectedCategory;
+
+        let searchMatches =
+            titleContainsSearchText ||
+            contentContainsSearchText;
+
+
+        let categoryMatches =
+            selectedCategory === "all" ||
+            currentNote.category === selectedCategory;
 
 
         if (
-            matchesSearch &&
-            matchesCategory
+            searchMatches &&
+            categoryMatches
         ) {
 
-            notesArea.innerHTML +=
-                renderNote(note, i);
+            filteredNotesArea.innerHTML +=
+
+                createNoteHTML(
+                    currentNote,
+                    noteIndex
+                );
+
         }
+
     }
+
 }
+
 
 </script>
 
 </body>
+
 </html>
